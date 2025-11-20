@@ -6,7 +6,7 @@ helper doc - https://mail-attachment.googleusercontent.com/attachment/u/1/?ui=2&
 
 ---
 
-[ ] - import table
-[ ] - render table with data
-[ ] - pagination
-[ ] - filters
+- [ ] import table
+- [ ] render table with data
+- [ ] pagination
+- [ ] filters

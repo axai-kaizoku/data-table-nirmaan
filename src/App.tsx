@@ -1,12 +1,18 @@
-import data from "@/consts/spotify_songs.json";
+import { useQuery } from "@tanstack/react-query";
+import { getData } from "./api/getData";
+import { DataTable } from "./table/data-table";
+
 export default function App() {
-  const first20 = data?.slice(0, 20);
+  const { data, isLoading } = useQuery({
+    queryKey: ["tracks-data"],
+    queryFn: () => getData(),
+  });
+  console.log(data);
   return (
-    <div className="w-full min-h-screen flex justify-center items-center">
-      <div className="p-20">
-        <h1 className="text-2xl font-semibold">Mock Data</h1>
-        <pre>{JSON.stringify(first20, null, 2)}</pre>
-      </div>
-    </div>
+    <div className="container mx-auto py-10">{isLoading ? <DataTableSkeleton /> : <DataTable data={data ?? []} />}</div>
   );
+}
+
+function DataTableSkeleton() {
+  return <div>Loading..</div>;
 }
