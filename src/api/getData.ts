@@ -1,4 +1,4 @@
-import data from "@/consts/spotify_songs.json";
+import mockData from "@/consts/spotify_songs.json";
 
 export type Track = {
   track_id: string;
@@ -26,8 +26,20 @@ export type Track = {
   duration_ms: number;
 };
 
-export const getData = async (): Promise<Track[]> => {
+export const getData = async ({
+  pageIndex = 0,
+  pageSize = 10,
+}: {
+  pageIndex?: number;
+  pageSize?: number;
+}): Promise<{ data: Track[]; pageCount: number }> => {
   await new Promise((resolve) => setTimeout(resolve, 1800));
 
-  return data?.slice(0, 20) as Track[];
+  const start = pageIndex * pageSize;
+  const end = start + pageSize;
+
+  const data = (mockData as Track[]).slice(start, end);
+  const pageCount = Math.ceil((mockData as Track[]).length / pageSize);
+
+  return { data, pageCount };
 };
