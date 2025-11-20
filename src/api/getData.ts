@@ -29,9 +29,11 @@ export type Track = {
 export const getData = async ({
   pageIndex = 0,
   pageSize = 10,
+  sorting,
 }: {
   pageIndex?: number;
   pageSize?: number;
+  sorting?: { id: keyof Track; desc: boolean }[];
 }): Promise<{ data: Track[]; pageCount: number }> => {
   await new Promise((resolve) => setTimeout(resolve, 1800));
 
@@ -39,6 +41,19 @@ export const getData = async ({
   const end = start + pageSize;
 
   const data = (mockData as Track[]).slice(start, end);
+  if (sorting) {
+    data.sort((a, b) => {
+      for (const sort of sorting) {
+        if (a[sort.id] < b[sort.id]) {
+          return sort.desc ? 1 : -1;
+        }
+        if (a[sort.id] > b[sort.id]) {
+          return sort.desc ? -1 : 1;
+        }
+      }
+      return 0;
+    });
+  }
   const pageCount = Math.ceil((mockData as Track[]).length / pageSize);
 
   return { data, pageCount };

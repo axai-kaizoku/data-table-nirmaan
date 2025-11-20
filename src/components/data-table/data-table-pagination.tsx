@@ -1,5 +1,5 @@
 import type { Table } from "@tanstack/react-table";
-import { ChevronLeft, ChevronRight, ChevronsLeft, ChevronsRight } from "lucide-react";
+import { ChevronLeft, ChevronRight, ChevronsLeft, ChevronsRight, Loader2 } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
@@ -8,11 +8,13 @@ import { cn } from "@/lib/utils";
 interface DataTablePaginationProps<TData> extends React.ComponentProps<"div"> {
   table: Table<TData>;
   pageSizeOptions?: number[];
+  isFetching?: boolean;
 }
 
 export function DataTablePagination<TData>({
   table,
   pageSizeOptions = [10, 20, 30, 40, 50],
+  isFetching,
   className,
   ...props
 }: DataTablePaginationProps<TData>) {
@@ -24,9 +26,16 @@ export function DataTablePagination<TData>({
       )}
       {...props}
     >
-      {/* <div /> */}
-      <div className="flex-1 whitespace-nowrap text-muted-foreground text-sm">
-        {table.getFilteredSelectedRowModel().rows.length} of {table.getRowModel().rows.length} row(s) selected.
+      <div className="flex flex-1 items-center gap-2">
+        <div className="whitespace-nowrap text-muted-foreground text-sm">
+          {table.getFilteredSelectedRowModel().rows.length} of {table.getRowModel().rows.length} row(s) selected.
+        </div>
+        {isFetching && (
+          <div className="flex items-center gap-2 text-muted-foreground text-sm">
+            <Loader2 className="animate-spin size-4" />
+            <span>Loading...</span>
+          </div>
+        )}
       </div>
       <div className="flex flex-col-reverse items-center gap-4 sm:flex-row sm:gap-6 lg:gap-8">
         <div className="flex items-center space-x-2">
@@ -36,6 +45,7 @@ export function DataTablePagination<TData>({
             onValueChange={(value) => {
               table.setPageSize(Number(value));
             }}
+            disabled={isFetching}
           >
             <SelectTrigger className="h-8 w-18 data-size:h-8">
               <SelectValue placeholder={table.getState().pagination.pageSize} />
@@ -59,7 +69,7 @@ export function DataTablePagination<TData>({
             size="icon"
             className="hidden size-8 lg:flex"
             onClick={() => table.setPageIndex(0)}
-            disabled={!table.getCanPreviousPage()}
+            disabled={!table.getCanPreviousPage() || isFetching}
           >
             <ChevronsLeft />
           </Button>
@@ -69,7 +79,7 @@ export function DataTablePagination<TData>({
             size="icon"
             className="size-8"
             onClick={() => table.previousPage()}
-            disabled={!table.getCanPreviousPage()}
+            disabled={!table.getCanPreviousPage() || isFetching}
           >
             <ChevronLeft />
           </Button>
@@ -79,7 +89,7 @@ export function DataTablePagination<TData>({
             size="icon"
             className="size-8"
             onClick={() => table.nextPage()}
-            disabled={!table.getCanNextPage()}
+            disabled={!table.getCanNextPage() || isFetching}
           >
             <ChevronRight />
           </Button>
@@ -89,7 +99,7 @@ export function DataTablePagination<TData>({
             size="icon"
             className="hidden size-8 lg:flex"
             onClick={() => table.setPageIndex(table.getPageCount() - 1)}
-            disabled={!table.getCanNextPage()}
+            disabled={!table.getCanNextPage() || isFetching}
           >
             <ChevronsRight />
           </Button>

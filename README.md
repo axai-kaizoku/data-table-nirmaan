@@ -6,10 +6,12 @@ helper doc - https://mail-attachment.googleusercontent.com/attachment/u/1/?ui=2&
 
 ---
 
+- issues - https://github.com/TanStack/table/issues/5567
+
 - [x] import table
 - [x] render table with data
 - [x] pagination
-- [ ] sorting
+- [-] sorting
 - [ ] filters
 - [ ] global search
 - [ ] data export

@@ -9,13 +9,22 @@ import { cn } from "@/lib/utils";
 interface DataTableProps<TData> extends React.ComponentProps<"div"> {
   table: TanstackTable<TData>;
   actionBar?: React.ReactNode;
+  isFetching?: boolean;
 }
 
-export function DataTable<TData>({ table, actionBar, children, className, ...props }: DataTableProps<TData>) {
+export function DataTable<TData>({
+  table,
+  actionBar,
+  isFetching,
+  children,
+  className,
+  ...props
+}: DataTableProps<TData>) {
   return (
     <div className={cn("flex w-full flex-col gap-2.5 overflow-auto", className)} {...props}>
       {children}
-      <div className="overflow-hidden rounded-md border">
+      <div className="relative overflow-hidden rounded-md border">
+        {/* {isFetching && <div className="absolute inset-0 z-10 bg-background/50 backdrop-blur-[1px]" />} */}
         <Table>
           <TableHeader>
             {table.getHeaderGroups().map((headerGroup) => (
@@ -61,7 +70,7 @@ export function DataTable<TData>({ table, actionBar, children, className, ...pro
         </Table>
       </div>
       <div className="flex flex-col gap-2.5">
-        <DataTablePagination table={table} />
+        <DataTablePagination table={table} isFetching={isFetching} />
         {actionBar && table.getFilteredSelectedRowModel().rows.length > 0 && actionBar}
       </div>
     </div>
