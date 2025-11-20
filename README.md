@@ -8,6 +8,9 @@ helper doc - https://mail-attachment.googleusercontent.com/attachment/u/1/?ui=2&
 
 - [x] import table
 - [x] render table with data
-- [-] selection
-- [ ] pagination
+- [x] pagination
+- [ ] sorting
 - [ ] filters
+- [ ] global search
+- [ ] data export
+- [ ] loading states

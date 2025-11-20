@@ -30,12 +30,6 @@ export const Main = () => {
         enableHiding: false,
       },
       {
-        accessorKey: "track_id",
-        id: "track_id",
-        header: "Id",
-        enableColumnFilter: true,
-      },
-      {
         accessorKey: "track_name",
         id: "track_name",
         header: "Name",
@@ -59,6 +53,11 @@ export const Main = () => {
         accessorKey: "track_album_release_date",
         id: "track_album_release_date",
         header: "Release Date",
+      },
+      {
+        accessorKey: "valence",
+        id: "valence",
+        header: "Valence",
       },
     ],
     []
