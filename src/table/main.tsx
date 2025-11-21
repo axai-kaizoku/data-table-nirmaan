@@ -1,12 +1,18 @@
 import { getData, type Track } from "@/api/getData";
 import { DataTable } from "@/components/data-table/data-table";
 import { DataTableColumnHeader } from "@/components/data-table/data-table-column-header";
+import { DataTableToolbar } from "@/components/data-table/data-table-toolbar";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
+import { useDebouncedCallback } from "@/hooks/use-debounced-callback";
+import { formatDate } from "@/lib/format";
 import { useQuery, type Updater } from "@tanstack/react-query";
-import type { ColumnDef, PaginationState, SortingState } from "@tanstack/react-table";
-import { getCoreRowModel, useReactTable } from "@tanstack/react-table";
+import type { ColumnDef, ColumnFiltersState, PaginationState, SortingState } from "@tanstack/react-table";
+import { getCoreRowModel, getFilteredRowModel, useReactTable } from "@tanstack/react-table";
 import React, { useState } from "react";
+
+const DEBOUNCE_MS = 300;
+// const THROTTLE_MS = 50;
 
 export const Main = () => {
   const columns = React.useMemo<ColumnDef<Track>[]>(
@@ -37,6 +43,11 @@ export const Main = () => {
         header: ({ column }) => {
           return <DataTableColumnHeader column={column} label="Track Name" />;
         },
+        enableColumnFilter: true,
+        meta: {
+          placeholder: "Search track names..",
+          variant: "text",
+        },
       },
       {
         accessorKey: "track_artist",
@@ -58,12 +69,48 @@ export const Main = () => {
         header: ({ column }) => {
           return <DataTableColumnHeader column={column} label="Genre" />;
         },
+        cell: ({ row }) => <div className="capitalize">{row.original.playlist_genre}</div>,
+        enableColumnFilter: true,
+        meta: {
+          variant: "multiSelect",
+          placeholder: "Search genre",
+          label: "Playlist Genre",
+          options: [
+            { label: "Alternative", value: "Alternative" },
+            { label: "Anime", value: "Anime" },
+            { label: "Blues", value: "Blues" },
+            { label: "Children's Music", value: "Children's Music" },
+            { label: "Classical", value: "Classical" },
+            { label: "Comedy", value: "comedy" },
+            { label: "Country", value: "country" },
+            { label: "Dance", value: "dance" },
+            { label: "Electronic", value: "electronic" },
+            { label: "Hip-Hop", value: "Hip-Hop" },
+            { label: "Indie", value: "indie" },
+            { label: "Latin", value: "latin" },
+            { label: "Movie", value: "movie" },
+            { label: "Pop", value: "pop" },
+            { label: "R&B", value: "r&b" },
+            { label: "Rap", value: "rap" },
+            { label: "Reggae", value: "Reggae" },
+            { label: "Rock", value: "Rock" },
+            { label: "Singer-Songwriter", value: "Singer-Songwriter" },
+            { label: "Soundtrack", value: "Soundtrack" },
+            { label: "World", value: "World" },
+          ],
+        },
       },
       {
         accessorKey: "track_album_release_date",
         id: "track_album_release_date",
         header: ({ column }) => {
           return <DataTableColumnHeader column={column} label="Release Date" />;
+        },
+        cell: ({ cell }) => <div>{formatDate(cell.getValue<Track["track_album_release_date"]>())}</div>,
+        enableColumnFilter: true,
+        meta: {
+          label: "Release Date",
+          variant: "dateRange",
         },
       },
       {
@@ -78,6 +125,12 @@ export const Main = () => {
           const seconds = ((duration % 60000) / 1000).toFixed(0);
           return `${minutes}:${seconds.padStart(2, "0")}`;
         },
+        enableColumnFilter: true,
+        meta: {
+          label: "Duration",
+          variant: "range",
+          range: [0, 10],
+        },
       },
     ],
     []
@@ -88,6 +141,44 @@ export const Main = () => {
 
   const [sorting, setSorting] = useState<SortingState>([]);
 
+  const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([]);
+
+  const [filterValues, setFilterValues] = useState({});
+
+  const debouncedSetFilterValues = useDebouncedCallback((values: typeof filterValues) => {
+    void setPage(1);
+    void setFilterValues(values);
+  }, DEBOUNCE_MS);
+
+  const filterableColumns = React.useMemo(() => {
+    return columns.filter((column) => column.enableColumnFilter);
+  }, [columns]);
+
+  const onColumnFiltersChange = React.useCallback(
+    (updaterOrValue: Updater<ColumnFiltersState, ColumnFiltersState>) => {
+      setColumnFilters((prev) => {
+        const next = typeof updaterOrValue === "function" ? updaterOrValue(prev) : updaterOrValue;
+
+        const filterUpdates = next.reduce<Record<string, string | string[] | null>>((acc, filter) => {
+          if (filterableColumns.find((column) => column.id === filter.id)) {
+            acc[filter.id] = filter.value as string | string[];
+          }
+          return acc;
+        }, {});
+
+        for (const prevFilter of prev) {
+          if (!next.some((filter) => filter.id === prevFilter.id)) {
+            filterUpdates[prevFilter.id] = null;
+          }
+        }
+
+        debouncedSetFilterValues(filterUpdates);
+        return next;
+      });
+    },
+    [filterableColumns, debouncedSetFilterValues]
+  );
+
   const pagination = React.useMemo(() => {
     return {
       pageIndex: page - 1,
@@ -96,7 +187,7 @@ export const Main = () => {
   }, [page, perPage]);
 
   const { data, isPending, isFetching, isError, error, refetch } = useQuery({
-    queryKey: ["data", page, perPage, sorting],
+    queryKey: ["data", page, perPage, sorting, filterValues],
     queryFn: async () =>
       await getData({
         ...pagination,
@@ -104,6 +195,7 @@ export const Main = () => {
           id: keyof Track;
           desc: boolean;
         }[],
+        filters: filterValues,
       }),
     placeholderData: (previousData) => previousData,
     refetchOnWindowFocus: false,
@@ -112,6 +204,7 @@ export const Main = () => {
     retry: 2,
     retryDelay: 1000,
   });
+  console.log({ data });
 
   const onPaginationChange = React.useCallback(
     (updaterOrValue: Updater<PaginationState, PaginationState>) => {
@@ -147,16 +240,22 @@ export const Main = () => {
       pagination,
       sorting: [{ id: "track_album_release_date", desc: false }],
     },
+    defaultColumn: {
+      enableColumnFilter: true,
+    },
     state: {
       pagination,
       sorting,
+      columnFilters,
     },
     onPaginationChange,
     onSortingChange,
+    onColumnFiltersChange,
     getCoreRowModel: getCoreRowModel(),
     enableRowSelection: true,
     enableMultiSort: true,
     isMultiSortEvent: () => true,
+    manualFiltering: true,
     manualSorting: true,
     manualPagination: true,
   });
@@ -179,7 +278,9 @@ export const Main = () => {
 
   return (
     <div className="p-4">
-      <DataTable table={table} isFetching={isFetching} />
+      <DataTable table={table} isFetching={isFetching}>
+        <DataTableToolbar table={table}></DataTableToolbar>
+      </DataTable>
     </div>
   );
 };
