@@ -37,12 +37,11 @@ export const getData = async ({
 }): Promise<{ data: Track[]; pageCount: number }> => {
   await new Promise((resolve) => setTimeout(resolve, 1800));
 
-  const start = pageIndex * pageSize;
-  const end = start + pageSize;
+  // Create a copy to avoid mutating the original data
+  let sortedData = [...(mockData as Track[])];
 
-  const data = (mockData as Track[]).slice(start, end);
-  if (sorting) {
-    data.sort((a, b) => {
+  if (sorting && sorting.length > 0) {
+    sortedData.sort((a, b) => {
       for (const sort of sorting) {
         if (a[sort.id] < b[sort.id]) {
           return sort.desc ? 1 : -1;
@@ -54,7 +53,13 @@ export const getData = async ({
       return 0;
     });
   }
-  const pageCount = Math.ceil((mockData as Track[]).length / pageSize);
+
+  const start = pageIndex * pageSize;
+  const end = start + pageSize;
+
+  const data = sortedData.slice(start, end);
+
+  const pageCount = Math.ceil(sortedData.length / pageSize);
 
   return { data, pageCount };
 };

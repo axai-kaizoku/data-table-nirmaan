@@ -23,7 +23,7 @@ export function DataTable<TData>({
   return (
     <div className={cn("flex w-full flex-col gap-2.5 overflow-auto", className)} {...props}>
       {children}
-      <div className="relative overflow-hidden rounded-md border">
+      <div className="relative overflow-hidden rounded-md border max-h-[56vh] overflow-y-auto [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
         {/* {isFetching && <div className="absolute inset-0 z-10 bg-background/50 backdrop-blur-[1px]" />} */}
         <Table>
           <TableHeader>

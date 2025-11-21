@@ -1,11 +1,11 @@
 import { getData, type Track } from "@/api/getData";
 import { DataTable } from "@/components/data-table/data-table";
+import { DataTableColumnHeader } from "@/components/data-table/data-table-column-header";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import { useQuery, type Updater } from "@tanstack/react-query";
 import type { ColumnDef, PaginationState, SortingState } from "@tanstack/react-table";
 import { getCoreRowModel, useReactTable } from "@tanstack/react-table";
-import { ArrowUpDown } from "lucide-react";
 import React, { useState } from "react";
 
 export const Main = () => {
@@ -27,7 +27,7 @@ export const Main = () => {
             aria-label="Select row"
           />
         ),
-        size: 32,
+        size: 40,
         enableSorting: false,
         enableHiding: false,
       },
@@ -35,38 +35,49 @@ export const Main = () => {
         accessorKey: "track_name",
         id: "track_name",
         header: ({ column }) => {
-          return (
-            <Button variant="ghost" onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}>
-              Name
-              <ArrowUpDown />
-            </Button>
-          );
+          return <DataTableColumnHeader column={column} label="Track Name" />;
         },
       },
       {
         accessorKey: "track_artist",
         id: "track_artist",
-        header: "Artist",
+        header: ({ column }) => {
+          return <DataTableColumnHeader column={column} label="Artist" />;
+        },
+      },
+      {
+        accessorKey: "track_album_name",
+        id: "track_album_name",
+        header: ({ column }) => {
+          return <DataTableColumnHeader column={column} label="Track Album Name" />;
+        },
       },
       {
         accessorKey: "playlist_genre",
         id: "playlist_genre",
-        header: "Genre",
-      },
-      {
-        accessorKey: "duration_ms",
-        id: "duration_ms",
-        header: "Duration",
+        header: ({ column }) => {
+          return <DataTableColumnHeader column={column} label="Genre" />;
+        },
       },
       {
         accessorKey: "track_album_release_date",
         id: "track_album_release_date",
-        header: "Release Date",
+        header: ({ column }) => {
+          return <DataTableColumnHeader column={column} label="Release Date" />;
+        },
       },
       {
-        accessorKey: "valence",
-        id: "valence",
-        header: "Valence",
+        accessorKey: "duration_ms",
+        id: "duration_ms",
+        header: ({ column }) => {
+          return <DataTableColumnHeader column={column} label="Duration" />;
+        },
+        cell: ({ row }) => {
+          const duration = row.getValue("duration_ms") as number;
+          const minutes = Math.floor(duration / 60000);
+          const seconds = ((duration % 60000) / 1000).toFixed(0);
+          return `${minutes}:${seconds.padStart(2, "0")}`;
+        },
       },
     ],
     []
@@ -94,8 +105,10 @@ export const Main = () => {
           desc: boolean;
         }[],
       }),
+    placeholderData: (previousData) => previousData,
     refetchOnWindowFocus: false,
-    placeholderData: (prev) => prev,
+    refetchOnMount: false,
+    staleTime: 5 * 60 * 1000,
     retry: 2,
     retryDelay: 1000,
   });
@@ -131,19 +144,21 @@ export const Main = () => {
     pageCount: data?.pageCount ?? 0,
     columns: columns,
     initialState: {
+      pagination,
       sorting: [{ id: "track_album_release_date", desc: false }],
     },
     state: {
       pagination,
       sorting,
     },
-    onPaginationChange: onPaginationChange,
-    onSortingChange: onSortingChange,
+    onPaginationChange,
+    onSortingChange,
     getCoreRowModel: getCoreRowModel(),
     enableRowSelection: true,
+    enableMultiSort: true,
+    isMultiSortEvent: () => true,
     manualSorting: true,
     manualPagination: true,
-    getRowId: (row) => row.track_id,
   });
 
   // Initial loading state (no data yet)
