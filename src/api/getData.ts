@@ -63,13 +63,13 @@ export const getData = async ({
   filters?: Filter;
   searchTerm?: string;
 }): Promise<{ data: Track[]; pageCount: number; totalCount: number }> => {
-  await new Promise((resolve) => setTimeout(resolve, 1800));
+  await new Promise((resolve) => setTimeout(resolve, 1000));
 
-  const randomNum = Math.random() * 10;
+  // const randomNum = Math.random() * 10;
 
-  if (randomNum < 5) {
-    throw new Error("Server is busy");
-  }
+  // if (randomNum < 5) {
+  //   throw new Error("Server is busy");
+  // }
 
   // console.log("API Request:", { pageIndex, pageSize, sorting, filters, searchTerm });
 
