@@ -1,18 +1,73 @@
-## Data-table
+# Data Table Spotify
 
----
+A feature-rich data table built with React, TanStack Table, and Tailwind CSS, showcasing advanced filtering, sorting, and search capabilities.
 
-helper doc - https://mail-attachment.googleusercontent.com/attachment/u/1/?ui=2&ik=241dd7dd45&attid=0.1&permmsgid=msg-f:1849110247046066185&th=19a95bf901b73009&view=att&zw&disp=inline&saddbat=ANGjdJ9kC7z242UsVHLoX7AsdX8K3t-xh2CXLCTg8qF82zUl24TuFRCyRJxXR_UIAHZJpjPxDe6Xlh_DmmePrrTcZcVIXImd9TmNVr7gCJ0DBlfLgP0PX3KftEhgQF01wi6W3qyXN1sjfazxAKTyyVdsqcUj5S7ntx9y2CSz6ZREK4mPs9unQ53sMRyGuTBa-wAojqWEvwH9lbTt79SfvGn2gCD459reMdkSaDIcwcBzmAI5Wh-x0aGbZQH_yhRHYJ9l44Wr8Bng7ynJ_0dLQD8PRNEADCEF1hTGGYZdotQyIR4_dxsKCbq5OgeoYsUBjVnj-JAH4owqacBikiw3ATsv_iNpUQ1oUz59M7rlggFNiGmMHeVVKPQezk62lR-9ST3_u0yUx6NPDgFKOEQQ2v3yR05Ua97Dak-UkSSWjnQqqTrC8uczq4ahILr76lScVAKvslQN2KYh7AUroq9NYGZkZoxXQF5NFaTf0yNBW4vFqxpOxrjWsuWpdcOeHqu6-wReAvQk6Tsy08cJ2fYA45vXe1hcVMDHxlx-Hcd89O6Xon0bhjgdgQINXUcvqng2YE7WkyIlufO0Mp-VQJnFtmfKGO7a-VzUEIC3nSiNF3xRg34icYgVSnI8t9lj9yglS45CpjSsVK6Y-I95c_cl8QUEVBsfnGwvOZU0NUkaGmGHPhysqAddccdVWbexT17JzZlAjVbcjZzmc9w5noqMUaja5yxvgyOEwAl1g96L8SIKR8z5Qy80Ui8TW3yomvgptqrUCKbgHnultRApwzTjXE77dxkIKrerAx05nwLvhmx9Jpxzq_DgNsrySyGVu_sPVRLaCl-bVPiyYmpcoOiA_Ic7zwToNa6W_JomPo1l_WtpWaFJNov743tdL_lRy4sPlhUy1v7fjQnfgXOhf2HhEaLvZN7-Q2-gGYBE8Eq5mTzcQwPOlZTjHd-XtTJ22oXhm72DQhL_zlcNED3GZprReLCfOaUmCLOvFsjFc7w_p4Wp51vOU0XkBH7B_vsA47UkC6pj_UXdd9v-ByASVoIIDnScfdSGqHezMdHGxKnFfFLK_csIqkZiN6m5uYtohvV_-EkUZQ4f_VbRBbvKU1HVu48j-kjbiaKcri9eYDIAF5fR2iNU2aArABVQSTUYMWU
+[live preview](https://data-table-spotify.netlify.app/)
 
----
+## Setup
 
-- issues - https://github.com/TanStack/table/issues/5567
+```bash
+# Install dependencies
+pnpm install
 
-- [x] import table
-- [x] render table with data
-- [x] pagination
-- [x] sorting
-- [x] filters
-- [x] global search
-- [x] data export
-- [x] loading states
+# Run development server
+pnpm dev
+
+# Build for production
+pnpm build
+```
+
+## Features
+
+- **Server-side pagination** - Efficient data loading with configurable page sizes
+- **Multi-column sorting** - Sort by multiple columns simultaneously
+- **Advanced filtering** - Faceted filters, date range filters, and slider filters for numeric values
+- **Global search** - Search across multiple columns with debouncing
+- **Data export** - Export filtered/sorted data to CSV
+- **Loading states** - Skeleton loaders and error handling with retry
+- **Responsive design** - Mobile-friendly with column visibility controls
+- **Type-safe** - Full TypeScript support throughout
+
+## Dataset
+
+Using the Spotify Songs dataset (32,000+ tracks) because it offers:
+
+- Rich variety of data types (strings, numbers, dates)
+- Real-world complexity with multiple filterable dimensions
+- Good size for demonstrating pagination and performance
+- Interesting use case that's relatable and engaging
+
+## Technology Decisions
+
+**TanStack Table v8** - Industry standard for complex tables, provides excellent API for server-side operations and state management.
+
+**TanStack Query** - Handles data fetching with caching, loading states, and error handling out of the box. Reduces boilerplate significantly.
+
+**Radix UI** - Accessible, unstyled components that work well with Tailwind. Better than building from scratch or using heavy component libraries.
+
+**Tailwind CSS v4** - Rapid styling with the new Vite plugin. Keeps bundle size small and development fast.
+
+**Custom hooks pattern** - Extracted state management logic into focused hooks (usePagination, useSorting, useColumnFilters) for better maintainability and testability.
+
+**Debouncing** - Applied to filters and search to reduce unnecessary API calls and improve performance.
+
+## Trade-offs
+
+- Mock API with artificial delay simulates real-world latency but adds development friction
+- Client-side filtering on mock data instead of true server-side (would need backend in production)
+
+## Known Limitations
+
+- Mock API has random failure rate for testing error states
+- Date filters could use better UX with presets (last 7 days, etc.)
+- No column resizing or reordering (could add with dnd-kit)
+- Export doesn't preserve column order/visibility preferences
+- Doesn't have virtualization for large datasets
+
+## Future Improvements
+
+- Add row selection with bulk actions
+- Implement column pinning for horizontal scrolling
+- Add saved filter presets
+- Implement infinite scroll as alternative to pagination
+- Manage state in url params
