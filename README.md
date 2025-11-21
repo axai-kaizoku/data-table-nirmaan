@@ -13,6 +13,6 @@ helper doc - https://mail-attachment.googleusercontent.com/attachment/u/1/?ui=2&
 - [x] pagination
 - [x] sorting
 - [x] filters
-- [ ] global search
+- [x] global search
 - [ ] data export
 - [ ] loading states

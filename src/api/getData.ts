@@ -61,17 +61,32 @@ export const getData = async ({
   pageSize = 10,
   sorting,
   filters,
+  searchTerm,
 }: {
   pageIndex?: number;
   pageSize?: number;
   sorting?: { id: keyof Track; desc: boolean }[];
   filters?: Filter;
+  searchTerm?: string;
 }): Promise<{ data: Track[]; pageCount: number }> => {
   await new Promise((resolve) => setTimeout(resolve, 1800));
 
-  console.log("API Request:", { pageIndex, pageSize, sorting, filters });
+  console.log("API Request:", { pageIndex, pageSize, sorting, filters, searchTerm });
 
   let processedData = [...(mockData as Track[])];
+
+  if (searchTerm && searchTerm.trim() !== "") {
+    const term = searchTerm.toLowerCase();
+    const keys: (keyof Track)[] = ["track_name", "track_artist", "track_album_name"];
+
+    processedData = processedData.filter((row) =>
+      keys.some((key) => {
+        const value = row[key];
+        return typeof value === "string" && value.toLowerCase().startsWith(term);
+      })
+    );
+  }
+
   if (filters && Object.keys(filters).length) {
     processedData = processedData.filter((row) => {
       return Object.entries(filters).every(([key, filterValue]) => {
@@ -169,4 +184,14 @@ export const getData = async ({
   console.log("API Response:", { totalCount, pageCount, dataLength: data.length });
 
   return { data, pageCount };
+};
+
+export const extractGenres = () => {
+  const cache = new Set<string>();
+  mockData.filter((d) => {
+    cache.add(d.playlist_genre);
+  });
+
+  console.log({ cache });
+  return cache;
 };

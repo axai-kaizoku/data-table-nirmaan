@@ -4,11 +4,13 @@ import { DataTableColumnHeader } from "@/components/data-table/data-table-column
 import { DataTableToolbar } from "@/components/data-table/data-table-toolbar";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
+import { Input } from "@/components/ui/input";
+import { useDebounce } from "@/hooks/use-debounce";
 import { useDebouncedCallback } from "@/hooks/use-debounced-callback";
 import { formatDate } from "@/lib/format";
 import { useQuery, type Updater } from "@tanstack/react-query";
 import type { ColumnDef, ColumnFiltersState, PaginationState, SortingState } from "@tanstack/react-table";
-import { getCoreRowModel, getFilteredRowModel, useReactTable } from "@tanstack/react-table";
+import { getCoreRowModel, useReactTable } from "@tanstack/react-table";
 import React, { useState } from "react";
 
 const DEBOUNCE_MS = 300;
@@ -44,7 +46,9 @@ export const Main = () => {
           return <DataTableColumnHeader column={column} label="Track Name" />;
         },
         enableColumnFilter: true,
+        enableGlobalFilter: true,
         meta: {
+          label: "Track Name",
           placeholder: "Search track names..",
           variant: "text",
         },
@@ -55,12 +59,22 @@ export const Main = () => {
         header: ({ column }) => {
           return <DataTableColumnHeader column={column} label="Artist" />;
         },
+        enableGlobalFilter: true,
+
+        meta: {
+          label: "Track Artist",
+        },
       },
       {
         accessorKey: "track_album_name",
         id: "track_album_name",
         header: ({ column }) => {
           return <DataTableColumnHeader column={column} label="Track Album Name" />;
+        },
+        enableGlobalFilter: true,
+
+        meta: {
+          label: "Track Album Name",
         },
       },
       {
@@ -69,6 +83,8 @@ export const Main = () => {
         header: ({ column }) => {
           return <DataTableColumnHeader column={column} label="Genre" />;
         },
+        enableGlobalFilter: true,
+
         cell: ({ row }) => <div className="capitalize">{row.original.playlist_genre}</div>,
         enableColumnFilter: true,
         meta: {
@@ -76,27 +92,12 @@ export const Main = () => {
           placeholder: "Search genre",
           label: "Playlist Genre",
           options: [
-            { label: "Alternative", value: "Alternative" },
-            { label: "Anime", value: "Anime" },
-            { label: "Blues", value: "Blues" },
-            { label: "Children's Music", value: "Children's Music" },
-            { label: "Classical", value: "Classical" },
-            { label: "Comedy", value: "comedy" },
-            { label: "Country", value: "country" },
-            { label: "Dance", value: "dance" },
-            { label: "Electronic", value: "electronic" },
-            { label: "Hip-Hop", value: "Hip-Hop" },
-            { label: "Indie", value: "indie" },
-            { label: "Latin", value: "latin" },
-            { label: "Movie", value: "movie" },
             { label: "Pop", value: "pop" },
-            { label: "R&B", value: "r&b" },
             { label: "Rap", value: "rap" },
-            { label: "Reggae", value: "Reggae" },
-            { label: "Rock", value: "Rock" },
-            { label: "Singer-Songwriter", value: "Singer-Songwriter" },
-            { label: "Soundtrack", value: "Soundtrack" },
-            { label: "World", value: "World" },
+            { label: "Rock", value: "rock" },
+            { label: "Latin", value: "Latin" },
+            { label: "R&B", value: "r&b" },
+            { label: "EDM", value: "edm" },
           ],
         },
       },
@@ -145,6 +146,10 @@ export const Main = () => {
 
   const [filterValues, setFilterValues] = useState({});
 
+  const [globalFilter, setGlobalFilter] = useState("");
+
+  const searchTerm = useDebounce(globalFilter, 300);
+
   const debouncedSetFilterValues = useDebouncedCallback((values: typeof filterValues) => {
     void setPage(1);
     void setFilterValues(values);
@@ -187,7 +192,7 @@ export const Main = () => {
   }, [page, perPage]);
 
   const { data, isPending, isFetching, isError, error, refetch } = useQuery({
-    queryKey: ["data", page, perPage, sorting, filterValues],
+    queryKey: ["data", page, perPage, sorting, filterValues, searchTerm],
     queryFn: async () =>
       await getData({
         ...pagination,
@@ -196,6 +201,7 @@ export const Main = () => {
           desc: boolean;
         }[],
         filters: filterValues,
+        searchTerm: searchTerm,
       }),
     placeholderData: (previousData) => previousData,
     refetchOnWindowFocus: false,
@@ -247,18 +253,24 @@ export const Main = () => {
       pagination,
       sorting,
       columnFilters,
+      globalFilter,
     },
     onPaginationChange,
     onSortingChange,
+    onGlobalFilterChange: setGlobalFilter,
     onColumnFiltersChange,
     getCoreRowModel: getCoreRowModel(),
     enableRowSelection: true,
     enableMultiSort: true,
     isMultiSortEvent: () => true,
     manualFiltering: true,
+    enableGlobalFilter: true,
     manualSorting: true,
     manualPagination: true,
   });
+
+  const isSearchTermFiltered = table.getState()?.globalFilter?.length > 0;
+  // console.log(table.getState().globalFilter);
 
   // Initial loading state (no data yet)
   if (isPending && !data) return <DataTableSkeleton />;
@@ -278,8 +290,16 @@ export const Main = () => {
 
   return (
     <div className="p-4">
+      <div className="px-1">
+        <Input
+          placeholder="Search..."
+          value={table.getState().globalFilter ?? ""}
+          onChange={(e) => table.setGlobalFilter(String(e.target.value))}
+        />
+      </div>
+
       <DataTable table={table} isFetching={isFetching}>
-        <DataTableToolbar table={table}></DataTableToolbar>
+        <DataTableToolbar table={table} isSearchTermFiltered={isSearchTermFiltered}></DataTableToolbar>
       </DataTable>
     </div>
   );

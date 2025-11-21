@@ -14,15 +14,23 @@ import { cn } from "@/lib/utils";
 
 interface DataTableToolbarProps<TData> extends React.ComponentProps<"div"> {
   table: Table<TData>;
+  isSearchTermFiltered?: boolean;
 }
 
-export function DataTableToolbar<TData>({ table, children, className, ...props }: DataTableToolbarProps<TData>) {
-  const isFiltered = table.getState().columnFilters.length > 0;
+export function DataTableToolbar<TData>({
+  isSearchTermFiltered,
+  table,
+  children,
+  className,
+  ...props
+}: DataTableToolbarProps<TData>) {
+  const isFiltered = isSearchTermFiltered ?? table.getState().columnFilters.length > 0;
 
   const columns = React.useMemo(() => table.getAllColumns().filter((column) => column.getCanFilter()), [table]);
 
   const onReset = React.useCallback(() => {
     table.resetColumnFilters();
+    table.resetGlobalFilter();
   }, [table]);
 
   return (
