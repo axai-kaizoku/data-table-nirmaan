@@ -1,6 +1,7 @@
 import { getData, type Track } from "@/api/getData";
 import { DataTable } from "@/components/data-table/data-table";
 import { DataTableColumnHeader } from "@/components/data-table/data-table-column-header";
+import { DataTableSkeleton } from "@/components/data-table/data-table-skeleton";
 import { DataTableToolbar } from "@/components/data-table/data-table-toolbar";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
@@ -86,9 +87,7 @@ export const Main = () => {
       {
         accessorKey: "playlist_genre",
         id: "playlist_genre",
-        header: ({ column }) => {
-          return <DataTableColumnHeader column={column} label="Genre" />;
-        },
+        header: () => <div className="pr-2">Genre</div>,
         cell: ({ row }) => <div className="capitalize">{row.original.playlist_genre}</div>,
         enableColumnFilter: true,
         meta: {
@@ -214,7 +213,6 @@ export const Main = () => {
     retry: 2,
     retryDelay: 1000,
   });
-  console.log({ data });
 
   const onPaginationChange = React.useCallback(
     (updaterOrValue: Updater<PaginationState, PaginationState>) => {
@@ -279,7 +277,17 @@ export const Main = () => {
   const isSearchTermFiltered = table.getState()?.globalFilter?.length > 0;
 
   // Initial loading state (no data yet)
-  if (isPending && !data) return <DataTableSkeleton />;
+  if (isPending && !data)
+    return (
+      <div className="p-3 py-5 container mx-auto">
+        <DataTableSkeleton
+          columnCount={7}
+          filterCount={4}
+          cellWidths={["8rem", "30rem", "10rem", "10rem", "6rem", "6rem", "6rem"]}
+          shrinkZero
+        />
+      </div>
+    );
 
   // Error state with retry option
   if (isError && !data) {
@@ -298,7 +306,7 @@ export const Main = () => {
     <div className="p-3 py-5 container mx-auto">
       <div className="px-1">
         <Input
-          placeholder="Search..."
+          placeholder="Search tracks, artists, albums.."
           className="h-8 mb-1.5"
           value={table.getState().globalFilter ?? ""}
           onChange={(e) => table.setGlobalFilter(String(e.target.value))}
@@ -311,6 +319,7 @@ export const Main = () => {
             variant="outline"
             className="font-normal"
             size="sm"
+            disabled={table.getRowCount() === 0}
             onClick={() =>
               exportTableToCSV(table, {
                 filename: "songs",
@@ -334,7 +343,3 @@ export const Main = () => {
     </div>
   );
 };
-
-function DataTableSkeleton() {
-  return <div>Loading..</div>;
-}

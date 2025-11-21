@@ -12,3 +12,9 @@ export function formatDate(date: Date | string | number | undefined, opts: Intl.
     return "";
   }
 }
+
+export function formatNumber(n: number): string {
+  return Intl.NumberFormat("en-US", {
+    maximumFractionDigits: 1,
+  }).format(n);
+}

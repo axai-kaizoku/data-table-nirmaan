@@ -5,8 +5,8 @@ import { ModeToggle } from "./mode-toggle";
 
 export const Header = () => {
   return (
-    <header className="sticky top-0 z-50 w-full border-border/40 border-b bg-background/95 backdrop-blur-sm supports-backdrop-filter:bg-background/60 px-4 container mx-auto">
-      <div className="container flex h-14 items-center">
+    <header className="sticky top-0 z-50 w-full border-border/40 border-b bg-background/95 backdrop-blur-sm supports-backdrop-filter:bg-background/60 shadow">
+      <div className="container flex h-14 items-center mx-auto px-3">
         <a href="/" className="mr-2 flex items-center md:mr-6 md:space-x-2">
           <BookHeadphones className="size-5" aria-hidden="true" />
           <span className="hidden font-bold md:inline-block">Spotify Songs</span>

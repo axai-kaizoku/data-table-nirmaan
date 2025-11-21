@@ -30,26 +30,20 @@ export type FilterValue = string | number | string[] | number[] | [number, numbe
 
 export type Filter = Record<string, FilterValue>;
 
-// helper to normalise a value to epoch milliseconds (or NaN if not a date/number)
 function toTimestampMs(raw: unknown): number {
   if (raw === null || raw === undefined) return NaN;
 
   if (typeof raw === "number") {
-    // if number looks like seconds (e.g. < 1e12), convert to ms
     return raw < 1e12 ? raw * 1000 : raw;
   }
 
   if (typeof raw === "string") {
     const trimmed = raw.trim();
-
-    // pure-digits string -> treat as epoch (seconds or ms)
     if (/^\d+$/.test(trimmed)) {
       const n = Number(trimmed);
       return n < 1e12 ? n * 1000 : n;
     }
-
-    // Try Date.parse (supports ISO date strings)
-    const parsed = Date.parse(trimmed); // returns ms or NaN
+    const parsed = Date.parse(trimmed);
     return Number.isFinite(parsed) ? parsed : NaN;
   }
 
@@ -71,7 +65,13 @@ export const getData = async ({
 }): Promise<{ data: Track[]; pageCount: number; totalCount: number }> => {
   await new Promise((resolve) => setTimeout(resolve, 1800));
 
-  console.log("API Request:", { pageIndex, pageSize, sorting, filters, searchTerm });
+  const randomNum = Math.random() * 10;
+
+  if (randomNum < 5) {
+    throw new Error("Server is busy");
+  }
+
+  // console.log("API Request:", { pageIndex, pageSize, sorting, filters, searchTerm });
 
   let processedData = [...(mockData as Track[])];
 
@@ -105,32 +105,41 @@ export const getData = async ({
         // 1) Multi-select or Range
         // -----------------------
         if (Array.isArray(filterValue)) {
-          const isRange =
-            filterValue.length === 2 && typeof filterValue[0] === "number" && typeof filterValue[1] === "number";
+          if (Array.isArray(filterValue) && filterValue.length === 2) {
+            // Accept [number|null, number|null] OR [number, number]
+            const rawMin = filterValue[0];
+            const rawMax = filterValue[1];
 
-          if (isRange) {
-            const minRaw = filterValue[0] as number;
-            const maxRaw = filterValue[1] as number;
+            const hasMin = typeof rawMin === "number";
+            const hasMax = typeof rawMax === "number";
 
-            const min = toTimestampMs(minRaw);
-            const max = toTimestampMs(maxRaw);
-
+            // SPECIAL CASE: duration_ms is in minutes in the UI -> convert cell ms -> minutes
             if (key === "duration_ms") {
-              const minutes = Number(cellValue) / 60000; // ms → minutes
-              return minutes >= minRaw && minutes <= maxRaw;
+              const minutes = Number(cellValue) / 60000; // ms -> minutes
+
+              const minMin = hasMin ? (rawMin as number) : -Infinity;
+              const maxMin = hasMax ? (rawMax as number) : Infinity;
+
+              return minutes >= minMin && minutes <= maxMin;
             }
 
-            // if filter bounds are invalid, skip this filter (or you could return true/false)
-            if (!Number.isFinite(min) || !Number.isFinite(max)) return true;
+            // For dates/numeric ranges: normalize filter bounds to ms if provided
+            const minTs = hasMin ? toTimestampMs(rawMin) : -Infinity;
+            const maxTs = hasMax ? toTimestampMs(rawMax) : Infinity;
+
+            // If both bounds were provided but are unparsable, treat as "no-op" (skip filter)
+            if (hasMin && !Number.isFinite(minTs) && hasMax && !Number.isFinite(maxTs)) {
+              return true;
+            }
 
             const numericCell = toTimestampMs(cellValue);
 
+            // If cell can't be parsed as a timestamp/number, it's not a match
             if (!Number.isFinite(numericCell)) {
-              // cell is not a parseable date/number -> treat as not-matching
               return false;
             }
 
-            return numericCell >= min && numericCell <= max;
+            return numericCell >= minTs && numericCell <= maxTs;
           }
 
           // MULTI-SELECT
@@ -181,7 +190,7 @@ export const getData = async ({
   const end = start + pageSize;
   const data = processedData.slice(start, end);
 
-  console.log("API Response:", { totalCount, pageCount, dataLength: data.length });
+  // console.log("API Response:", { totalCount, pageCount, dataLength: data.length });
 
   return { data, pageCount, totalCount };
 };

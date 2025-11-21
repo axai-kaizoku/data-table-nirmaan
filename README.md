@@ -14,5 +14,5 @@ helper doc - https://mail-attachment.googleusercontent.com/attachment/u/1/?ui=2&
 - [x] sorting
 - [x] filters
 - [x] global search
-- [ ] data export
-- [ ] loading states
+- [x] data export
+- [x] loading states

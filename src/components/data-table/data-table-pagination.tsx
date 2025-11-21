@@ -4,6 +4,7 @@ import { ChevronLeft, ChevronRight, ChevronsLeft, ChevronsRight, Loader2 } from 
 import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { cn } from "@/lib/utils";
+import { formatNumber } from "@/lib/format";
 
 interface DataTablePaginationProps<TData> extends React.ComponentProps<"div"> {
   table: Table<TData>;
@@ -38,10 +39,8 @@ export function DataTablePagination<TData>({
             const start = pageIndex * pageSize + 1;
             const end = Math.min((pageIndex + 1) * pageSize, total);
 
-            return `Showing ${start}-${end} of ${total}`;
+            return `Showing ${start}-${end} of ${formatNumber(total)}`;
           })()}
-          {/* Showing 1-25 of 30,000 */}
-          {/* {table.getFilteredSelectedRowModel().rows.length} of {table.getRowModel().rows.length} row(s) selected. */}
         </div>
         {isFetching && (
           <div className="flex items-center gap-2 text-muted-foreground text-sm">
@@ -73,7 +72,7 @@ export function DataTablePagination<TData>({
           </Select>
         </div>
         <div className="flex items-center justify-center font-medium text-sm">
-          Page {table.getState().pagination.pageIndex + 1} of {table.getPageCount()}
+          Page {table.getState().pagination.pageIndex + 1} of {formatNumber(table.getPageCount())}
         </div>
         <div className="flex items-center space-x-2">
           <Button
@@ -82,7 +81,7 @@ export function DataTablePagination<TData>({
             size="icon"
             className="hidden size-8 lg:flex"
             onClick={() => table.setPageIndex(0)}
-            disabled={!table.getCanPreviousPage() || isFetching}
+            disabled={!table.getCanPreviousPage()}
           >
             <ChevronsLeft />
           </Button>
@@ -92,7 +91,7 @@ export function DataTablePagination<TData>({
             size="icon"
             className="size-8"
             onClick={() => table.previousPage()}
-            disabled={!table.getCanPreviousPage() || isFetching}
+            disabled={!table.getCanPreviousPage()}
           >
             <ChevronLeft />
           </Button>
@@ -102,7 +101,7 @@ export function DataTablePagination<TData>({
             size="icon"
             className="size-8"
             onClick={() => table.nextPage()}
-            disabled={!table.getCanNextPage() || isFetching}
+            disabled={!table.getCanNextPage()}
           >
             <ChevronRight />
           </Button>
@@ -112,7 +111,7 @@ export function DataTablePagination<TData>({
             size="icon"
             className="hidden size-8 lg:flex"
             onClick={() => table.setPageIndex(table.getPageCount() - 1)}
-            disabled={!table.getCanNextPage() || isFetching}
+            disabled={!table.getCanNextPage()}
           >
             <ChevronsRight />
           </Button>
