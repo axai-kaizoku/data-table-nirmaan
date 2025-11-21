@@ -1,10 +1,11 @@
+import { Header } from "./components/layout/header";
 import { Main } from "./table/main";
 
 export default function App() {
   return (
-    <div className="container mx-auto py-10">
-      <h1 className="text-3xl font-bold px-4">Spotify Data</h1>
+    <section className="mx-auto flex flex-col">
+      <Header />
       <Main />
-    </div>
+    </section>
   );
 }

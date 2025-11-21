@@ -16,7 +16,6 @@ import { Download } from "lucide-react";
 import React, { useState } from "react";
 
 const DEBOUNCE_MS = 300;
-// const THROTTLE_MS = 50;
 
 export const Main = () => {
   const columns = React.useMemo<ColumnDef<Track>[]>(
@@ -24,18 +23,24 @@ export const Main = () => {
       {
         id: "select",
         header: ({ table }) => (
-          <Checkbox
-            checked={table.getIsAllPageRowsSelected() || (table.getIsSomePageRowsSelected() && "indeterminate")}
-            onCheckedChange={(value) => table.toggleAllPageRowsSelected(!!value)}
-            aria-label="Select all"
-          />
+          <div className="p-2">
+            <Checkbox
+              checked={table.getIsAllPageRowsSelected() || (table.getIsSomePageRowsSelected() && "indeterminate")}
+              onCheckedChange={(value) => table.toggleAllPageRowsSelected(!!value)}
+              aria-label="Select all"
+              className="translate-y-0.5"
+            />
+          </div>
         ),
         cell: ({ row }) => (
-          <Checkbox
-            checked={row.getIsSelected()}
-            onCheckedChange={(value) => row.toggleSelected(!!value)}
-            aria-label="Select row"
-          />
+          <div className="p-2">
+            <Checkbox
+              checked={row.getIsSelected()}
+              className="translate-y-0.5"
+              onCheckedChange={(value) => row.toggleSelected(!!value)}
+              aria-label="Select row"
+            />
+          </div>
         ),
         size: 40,
         enableSorting: false,
@@ -240,6 +245,9 @@ export const Main = () => {
   const table = useReactTable({
     data: data?.data ?? [],
     pageCount: data?.pageCount ?? 0,
+    meta: {
+      totalCount: data?.totalCount ?? 0,
+    },
     columns: columns,
     initialState: {
       pagination,
@@ -269,7 +277,6 @@ export const Main = () => {
   });
 
   const isSearchTermFiltered = table.getState()?.globalFilter?.length > 0;
-  // console.log(table.getState().globalFilter);
 
   // Initial loading state (no data yet)
   if (isPending && !data) return <DataTableSkeleton />;
@@ -288,7 +295,7 @@ export const Main = () => {
   }
 
   return (
-    <div className="p-4">
+    <div className="p-3 py-5 container mx-auto">
       <div className="px-1">
         <Input
           placeholder="Search..."

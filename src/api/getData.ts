@@ -68,7 +68,7 @@ export const getData = async ({
   sorting?: { id: keyof Track; desc: boolean }[];
   filters?: Filter;
   searchTerm?: string;
-}): Promise<{ data: Track[]; pageCount: number }> => {
+}): Promise<{ data: Track[]; pageCount: number; totalCount: number }> => {
   await new Promise((resolve) => setTimeout(resolve, 1800));
 
   console.log("API Request:", { pageIndex, pageSize, sorting, filters, searchTerm });
@@ -183,7 +183,7 @@ export const getData = async ({
 
   console.log("API Response:", { totalCount, pageCount, dataLength: data.length });
 
-  return { data, pageCount };
+  return { data, pageCount, totalCount };
 };
 
 export const extractGenres = () => {

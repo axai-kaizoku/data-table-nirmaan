@@ -28,7 +28,20 @@ export function DataTablePagination<TData>({
     >
       <div className="flex flex-1 items-center gap-2">
         <div className="whitespace-nowrap text-muted-foreground text-sm">
-          {table.getFilteredSelectedRowModel().rows.length} of {table.getRowModel().rows.length} row(s) selected.
+          {/* {table.getFilteredSelectedRowModel().rows.length} of {table.getRowModel().rows.length} row(s) selected. */}
+          {(() => {
+            const { pageIndex, pageSize } = table.getState().pagination;
+            const total = table?.options?.meta?.totalCount;
+
+            if (total === 0) return "No results";
+
+            const start = pageIndex * pageSize + 1;
+            const end = Math.min((pageIndex + 1) * pageSize, total);
+
+            return `Showing ${start}-${end} of ${total}`;
+          })()}
+          {/* Showing 1-25 of 30,000 */}
+          {/* {table.getFilteredSelectedRowModel().rows.length} of {table.getRowModel().rows.length} row(s) selected. */}
         </div>
         {isFetching && (
           <div className="flex items-center gap-2 text-muted-foreground text-sm">
