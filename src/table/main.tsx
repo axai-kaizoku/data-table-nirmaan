@@ -7,10 +7,12 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { Input } from "@/components/ui/input";
 import { useDebounce } from "@/hooks/use-debounce";
 import { useDebouncedCallback } from "@/hooks/use-debounced-callback";
+import { exportTableToCSV } from "@/lib/export";
 import { formatDate } from "@/lib/format";
 import { useQuery, type Updater } from "@tanstack/react-query";
 import type { ColumnDef, ColumnFiltersState, PaginationState, SortingState } from "@tanstack/react-table";
 import { getCoreRowModel, useReactTable } from "@tanstack/react-table";
+import { Download } from "lucide-react";
 import React, { useState } from "react";
 
 const DEBOUNCE_MS = 300;
@@ -72,7 +74,6 @@ export const Main = () => {
           return <DataTableColumnHeader column={column} label="Track Album Name" />;
         },
         enableGlobalFilter: true,
-
         meta: {
           label: "Track Album Name",
         },
@@ -83,19 +84,17 @@ export const Main = () => {
         header: ({ column }) => {
           return <DataTableColumnHeader column={column} label="Genre" />;
         },
-        enableGlobalFilter: true,
-
         cell: ({ row }) => <div className="capitalize">{row.original.playlist_genre}</div>,
         enableColumnFilter: true,
         meta: {
-          variant: "multiSelect",
+          variant: "select",
           placeholder: "Search genre",
           label: "Playlist Genre",
           options: [
             { label: "Pop", value: "pop" },
             { label: "Rap", value: "rap" },
             { label: "Rock", value: "rock" },
-            { label: "Latin", value: "Latin" },
+            { label: "Latin", value: "latin" },
             { label: "R&B", value: "r&b" },
             { label: "EDM", value: "edm" },
           ],
@@ -138,7 +137,7 @@ export const Main = () => {
   );
 
   const [page, setPage] = useState(1);
-  const [perPage, setPerPage] = useState(10);
+  const [perPage, setPerPage] = useState(25);
 
   const [sorting, setSorting] = useState<SortingState>([]);
 
@@ -293,13 +292,37 @@ export const Main = () => {
       <div className="px-1">
         <Input
           placeholder="Search..."
+          className="h-8 mb-1.5"
           value={table.getState().globalFilter ?? ""}
           onChange={(e) => table.setGlobalFilter(String(e.target.value))}
         />
       </div>
 
       <DataTable table={table} isFetching={isFetching}>
-        <DataTableToolbar table={table} isSearchTermFiltered={isSearchTermFiltered}></DataTableToolbar>
+        <DataTableToolbar table={table} isSearchTermFiltered={isSearchTermFiltered}>
+          <Button
+            variant="outline"
+            className="font-normal"
+            size="sm"
+            onClick={() =>
+              exportTableToCSV(table, {
+                filename: "songs",
+                excludeColumns: ["select", "actions"],
+                onlySelected: Object.keys(table.getState().rowSelection).length > 0,
+              })
+            }
+          >
+            <Download />
+            {Object.keys(table.getState().rowSelection).length > 0 ? (
+              <>
+                Export Selected
+                <div className="text-xs -ml-1">{`(${Object.keys(table.getState().rowSelection).length})`}</div>
+              </>
+            ) : (
+              "Export All"
+            )}
+          </Button>
+        </DataTableToolbar>
       </DataTable>
     </div>
   );

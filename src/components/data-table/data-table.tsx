@@ -70,7 +70,7 @@ export function DataTable<TData>({
         </Table>
       </div>
       <div className="flex flex-col gap-2.5">
-        <DataTablePagination table={table} isFetching={isFetching} />
+        <DataTablePagination table={table} isFetching={isFetching} pageSizeOptions={[25, 50, 100]} />
         {actionBar && table.getFilteredSelectedRowModel().rows.length > 0 && actionBar}
       </div>
     </div>
