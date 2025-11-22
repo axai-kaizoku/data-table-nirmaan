@@ -1,8 +1,16 @@
 import { type Track } from "@/api/getData";
 import { DataTableColumnHeader } from "@/components/data-table/data-table-column-header";
+import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 import { formatDate } from "@/lib/format";
 import type { ColumnDef } from "@tanstack/react-table";
+import { AudioLines, Clock4, MoreHorizontal } from "lucide-react";
 
 export function getColumns(): ColumnDef<Track>[] {
   return [
@@ -53,7 +61,6 @@ export function getColumns(): ColumnDef<Track>[] {
         return <DataTableColumnHeader column={column} label="Artist" />;
       },
       enableGlobalFilter: true,
-
       meta: {
         label: "Track Artist",
       },
@@ -79,6 +86,7 @@ export function getColumns(): ColumnDef<Track>[] {
         variant: "select",
         placeholder: "Search genre",
         label: "Playlist Genre",
+        icon: AudioLines,
         options: [
           { label: "Pop", value: "pop" },
           { label: "Rap", value: "rap" },
@@ -116,9 +124,40 @@ export function getColumns(): ColumnDef<Track>[] {
       },
       enableColumnFilter: true,
       meta: {
+        icon: Clock4,
         label: "Duration",
         variant: "range",
         range: [0, 10],
+      },
+    },
+    {
+      id: "action",
+      cell: () => {
+        return (
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button variant={"ghost"}>
+                <MoreHorizontal className="size-4" />
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end">
+              <DropdownMenuItem
+                onClick={() => {
+                  console.log("edit");
+                }}
+              >
+                Edit
+              </DropdownMenuItem>
+              <DropdownMenuItem
+                onClick={() => {
+                  console.log("delete");
+                }}
+              >
+                Delete
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
+        );
       },
     },
   ];

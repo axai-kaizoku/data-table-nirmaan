@@ -24,7 +24,7 @@ export function DataTableToolbar<TData>({
   className,
   ...props
 }: DataTableToolbarProps<TData>) {
-  const isFiltered = isSearchTermFiltered ?? table.getState().columnFilters.length > 0;
+  const isFiltered = isSearchTermFiltered || table.getState().columnFilters.length > 0;
 
   const columns = React.useMemo(() => table.getAllColumns().filter((column) => column.getCanFilter()), [table]);
 

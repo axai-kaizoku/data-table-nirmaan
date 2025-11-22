@@ -12,9 +12,12 @@ import { useTrackData } from "@/hooks/use-track-data";
 import { getCoreRowModel, useReactTable } from "@tanstack/react-table";
 import React from "react";
 import { getColumns } from "./columns";
+import { Track } from "@/api/getData";
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 
 export const Main = () => {
   const columns = React.useMemo(() => getColumns(), []);
+  const [rowAction, setRowAction] = React.useState<Track & { action: string } | null>(null)
 
   const { page, perPage, pagination, onPaginationChange } = usePagination();
   const { sorting, onSortingChange } = useSorting();
@@ -67,7 +70,7 @@ export const Main = () => {
   const isSearchTermFiltered = table.getState()?.globalFilter?.length > 0;
 
   // Initial loading state (no data yet)
-  if (isPending && !data)
+  if (isPending && !data) {
     return (
       <div className="p-3 py-5 container mx-auto">
         <DataTableSkeleton
@@ -78,6 +81,7 @@ export const Main = () => {
         />
       </div>
     );
+  }
 
   // Error state with retry option
   if (isError && !data) {
@@ -93,6 +97,35 @@ export const Main = () => {
           <DataTableExportButton table={table} filename="songs" />
         </DataTableToolbar>
       </DataTable>
+      <UpdateTrack open={!!rowAction && rowAction.action === "update"} setOpen={(open) => setRowAction(open ? rowAction : null)} />
+      <DeleteTrack open={!!rowAction && rowAction.action === "delete"} setOpen={(open) => setRowAction(open ? rowAction : null)} />
     </div>
   );
 };
+
+
+const UpdateTrack = ({ open, setOpen }: { open: boolean; setOpen: (open: boolean) => void }) => {
+  return <Dialog open={open} onOpenChange={setOpen}>
+    <DialogContent>
+      <DialogHeader>
+        <DialogTitle>Update Track</DialogTitle>
+        <DialogDescription>
+          Update track details
+        </DialogDescription>
+      </DialogHeader>
+    </DialogContent>
+  </Dialog>
+}
+
+const DeleteTrack = ({ open, setOpen }: { open: boolean; setOpen: (open: boolean) => void }) => {
+  return <Dialog open={open} onOpenChange={setOpen}>
+    <DialogContent>
+      <DialogHeader>
+        <DialogTitle>Delete Track</DialogTitle>
+        <DialogDescription>
+          Delete track details
+        </DialogDescription>
+      </DialogHeader>
+    </DialogContent>
+  </Dialog>
+}
