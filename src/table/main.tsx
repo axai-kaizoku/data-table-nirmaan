@@ -1,23 +1,24 @@
+import type { Track } from "@/api/getData";
 import { DataTable } from "@/components/data-table/data-table";
 import { DataTableError } from "@/components/data-table/data-table-error";
 import { DataTableExportButton } from "@/components/data-table/data-table-export-button";
 import { DataTableSearch } from "@/components/data-table/data-table-search";
 import { DataTableSkeleton } from "@/components/data-table/data-table-skeleton";
 import { DataTableToolbar } from "@/components/data-table/data-table-toolbar";
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { useColumnFilters } from "@/hooks/use-column-filters";
 import { useGlobalFilter } from "@/hooks/use-global-filter";
 import { usePagination } from "@/hooks/use-pagination";
 import { useSorting } from "@/hooks/use-sorting";
 import { useTrackData } from "@/hooks/use-track-data";
+import type { DataTableRowAction } from "@/types/data-table";
 import { getCoreRowModel, useReactTable } from "@tanstack/react-table";
 import React from "react";
 import { getColumns } from "./columns";
-import { Track } from "@/api/getData";
-import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 
 export const Main = () => {
-  const columns = React.useMemo(() => getColumns(), []);
-  const [rowAction, setRowAction] = React.useState<Track & { action: string } | null>(null)
+  const [rowAction, setRowAction] = React.useState<DataTableRowAction<Track> | null>(null)
+  const columns = React.useMemo(() => getColumns({ setRowAction }), []);
 
   const { page, perPage, pagination, onPaginationChange } = usePagination();
   const { sorting, onSortingChange } = useSorting();
@@ -97,14 +98,18 @@ export const Main = () => {
           <DataTableExportButton table={table} filename="songs" />
         </DataTableToolbar>
       </DataTable>
-      <UpdateTrack open={!!rowAction && rowAction.action === "update"} setOpen={(open) => setRowAction(open ? rowAction : null)} />
-      <DeleteTrack open={!!rowAction && rowAction.action === "delete"} setOpen={(open) => setRowAction(open ? rowAction : null)} />
+      <UpdateTrack open={!!rowAction && rowAction.variant === "update"} setOpen={(open) => setRowAction(open ? rowAction : null)} />
+      <DeleteTrack open={!!rowAction && rowAction.variant === "delete"} setOpen={(open) => setRowAction(open ? rowAction : null)} />
     </div>
   );
 };
 
 
 const UpdateTrack = ({ open, setOpen }: { open: boolean; setOpen: (open: boolean) => void }) => {
+  const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    setOpen(false);
+  }
   return <Dialog open={open} onOpenChange={setOpen}>
     <DialogContent>
       <DialogHeader>
@@ -113,6 +118,16 @@ const UpdateTrack = ({ open, setOpen }: { open: boolean; setOpen: (open: boolean
           Update track details
         </DialogDescription>
       </DialogHeader>
+      <form onSubmit={handleSubmit}>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div className="col-span-2">
+              {/* <Label htmlFor="name">Name</Label> */}
+              {/* <Input id="name" name="name" type="text" /> */}
+            </div>
+          </div>
+        </div>
+      </form>
     </DialogContent>
   </Dialog>
 }

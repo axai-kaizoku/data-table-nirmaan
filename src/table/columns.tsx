@@ -9,10 +9,12 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { formatDate } from "@/lib/format";
+import type { DataTableRowAction } from "@/types/data-table";
 import type { ColumnDef } from "@tanstack/react-table";
 import { AudioLines, Clock4, MoreHorizontal } from "lucide-react";
+import { useTransition } from "react";
 
-export function getColumns(): ColumnDef<Track>[] {
+export function getColumns({ setRowAction }: { setRowAction: React.Dispatch<React.SetStateAction<DataTableRowAction<Track> | null>> }): ColumnDef<Track>[] {
   return [
     {
       id: "select",
@@ -132,7 +134,7 @@ export function getColumns(): ColumnDef<Track>[] {
     },
     {
       id: "action",
-      cell: () => {
+      cell: ({ row }) => {
         return (
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
@@ -142,15 +144,15 @@ export function getColumns(): ColumnDef<Track>[] {
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end">
               <DropdownMenuItem
-                onClick={() => {
-                  console.log("edit");
+                onSelect={() => {
+                  setRowAction({ row, variant: "update" })
                 }}
               >
                 Edit
               </DropdownMenuItem>
               <DropdownMenuItem
-                onClick={() => {
-                  console.log("delete");
+                onSelect={() => {
+                  setRowAction({ row, variant: "delete" })
                 }}
               >
                 Delete
