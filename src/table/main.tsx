@@ -13,8 +13,9 @@ import { useSorting } from "@/hooks/use-sorting";
 import { useTrackData } from "@/hooks/use-track-data";
 import type { DataTableRowAction } from "@/types/data-table";
 import { getCoreRowModel, useReactTable } from "@tanstack/react-table";
-import React from "react";
+import React, { useMemo, useState } from "react";
 import { getColumns } from "./columns";
+import { updateRowData } from "@/api/updateRowData";
 
 export const Main = () => {
   const [rowAction, setRowAction] = React.useState<DataTableRowAction<Track> | null>(null)
@@ -98,49 +99,75 @@ export const Main = () => {
           <DataTableExportButton table={table} filename="songs" />
         </DataTableToolbar>
       </DataTable>
-      <UpdateTrack open={!!rowAction && rowAction.variant === "update"} setOpen={(open) => setRowAction(open ? rowAction : null)} />
-      <DeleteTrack open={!!rowAction && rowAction.variant === "delete"} setOpen={(open) => setRowAction(open ? rowAction : null)} />
+      {rowAction && (
+        <>
+
+          <UpdateTrack open={!!rowAction && rowAction.variant === "update"} setOpen={(open) => setRowAction(open ? rowAction : null)} row={rowAction} />
+          <DeleteTrack open={!!rowAction && rowAction.variant === "delete"} setOpen={(open) => setRowAction(open ? rowAction : null)} />
+        </>
+      )}
     </div>
   );
 };
 
 
-const UpdateTrack = ({ open, setOpen }: { open: boolean; setOpen: (open: boolean) => void }) => {
+const UpdateTrack = ({ open, setOpen, row }: { open: boolean; setOpen: (open: boolean) => void; row: DataTableRowAction<Track> }) => {
+
+  const visibleRows = useMemo(() => {
+    return row.row.getVisibleCells().filter((cell) => cell.column.columnDef.id !== "select" && cell.column.columnDef.id !== "action")
+  }, [row])
+
+  const [rowData, setRowData] = useState<Track>(row.row.original)
+
   const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
+    const data: Track = {};
+    for (let i = 0; i < visibleRows.length; i++) {
+      const cell = visibleRows[i];
+      data[cell.column.columnDef.id as keyof Track] = e.target[i]?.value ?? "";
+    }
+    updateRowData({ id: row.row.original.track_id, body: data })
     setOpen(false);
   }
-  return <Dialog open={open} onOpenChange={setOpen}>
-    <DialogContent>
-      <DialogHeader>
-        <DialogTitle>Update Track</DialogTitle>
-        <DialogDescription>
-          Update track details
-        </DialogDescription>
-      </DialogHeader>
-      <form onSubmit={handleSubmit}>
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div className="col-span-2">
-              {/* <Label htmlFor="name">Name</Label> */}
-              {/* <Input id="name" name="name" type="text" /> */}
-            </div>
-          </div>
-        </div>
-      </form>
-    </DialogContent>
-  </Dialog>
-}
 
-const DeleteTrack = ({ open, setOpen }: { open: boolean; setOpen: (open: boolean) => void }) => {
-  return <Dialog open={open} onOpenChange={setOpen}>
-    <DialogContent>
-      <DialogHeader>
-        <DialogTitle>Delete Track</DialogTitle>
-        <DialogDescription>
-          Delete track details
-        </DialogDescription>
-      </DialogHeader>
-    </DialogContent>
-  </Dialog>
+
+  return (
+    <Dialog open={open} onOpenChange={setOpen}>
+      <DialogContent>
+        <DialogHeader>
+          <DialogTitle>Update Track</DialogTitle>
+          <DialogDescription>
+            Update track details
+          </DialogDescription>
+        </DialogHeader>
+        <pre>{JSON.stringify(rowData, null, 2)}</pre>
+
+        <form onSubmit={handleSubmit}>
+          {visibleRows.map((cell) => (
+            <div key={cell.id}>
+              {/* <label htmlFor={cell.id}>{cell.column.columnDef.header}</label> */}
+              <input type="text" id={cell.id} name={cell.id} value={cell.getValue() as string} />
+            </div>
+          ))}
+          <button type="submit">Update</button>
+        </form>
+      </DialogContent>
+    </Dialog>
+  )
+};
+
+export const DeleteTrack = ({ open, setOpen }: { open: boolean; setOpen: (open: boolean) => void }) => {
+
+  return (
+    <Dialog open={open} onOpenChange={setOpen}>
+      <DialogContent>
+        <DialogHeader>
+          <DialogTitle>Delete Track</DialogTitle>
+          <DialogDescription>
+            Delete track details
+          </DialogDescription>
+        </DialogHeader>
+      </DialogContent>
+    </Dialog>
+  )
 }

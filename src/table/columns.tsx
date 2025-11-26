@@ -12,7 +12,6 @@ import { formatDate } from "@/lib/format";
 import type { DataTableRowAction } from "@/types/data-table";
 import type { ColumnDef } from "@tanstack/react-table";
 import { AudioLines, Clock4, MoreHorizontal } from "lucide-react";
-import { useTransition } from "react";
 
 export function getColumns({ setRowAction }: { setRowAction: React.Dispatch<React.SetStateAction<DataTableRowAction<Track> | null>> }): ColumnDef<Track>[] {
   return [
